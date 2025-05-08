@@ -78,14 +78,16 @@ app.layout = html.Div([
     html.H1(children="Oh hi! Welcome to the Eras Tour (Data Visualition's Version)!"),
     dcc.Graph(id="world-map", figure=map_fig),
     html.Div(
-        dcc.Graph(id="city_chart"),
+        children=[dcc.Graph(id="city_chart"),
+        html.Ul(id="song_list")],
         id="bar-container",
-        style={"display": "none", "marginTop": "20px"})
+        style={"display": "none", "marginTop": "20px"}),
 ])
 
 @app.callback(
         [Output("bar-container", "style"),
-        Output("city_chart", "figure")],
+        Output("city_chart", "figure"),
+        Output("song_list", "children")],
         Input("world-map", "clickData")) 
 
 def display_city_info(clickData):
@@ -97,8 +99,17 @@ def display_city_info(clickData):
     city_stats = data.loc[data["city"]==city]
 
     city_chart = create_bar_chart(city_stats, 'date', 'tick_sales', f'Ticket sale in {city}', 'Sales ($)', 'Category')
+    songs_1 = city_stats['surp_1']
+ 
+    songs_2 = city_stats['surp_2']
 
-    return {"display": "block"}, city_chart
+    songs_1 = list(city_stats['surp_1'].str.split(' / '))
+
+    songs_2 = list(city_stats['surp_2'].str.split(' / '))
+    song_list = [html.Li(x) for x in songs_1]
+    song_list += [html.Li(x) for x in songs_2]
+
+    return {"display": "block"}, city_chart, song_list
 
 
 # Run the server
