@@ -7,7 +7,6 @@ from dash import html, dcc, Output, Input
 # Read the data and create a DataFrame
 def preprocess_data():
     data = pd.read_csv("dataset_ts.csv", sep=";")
-    print(data.columns)
 
     city_sales = data.groupby('city')['tick_sales'].sum().reset_index()
 
@@ -69,31 +68,37 @@ surprs_fig = create_bar_chart(song_counts_df, 'Song', 'Count', 'How many times e
 
 app = dash.Dash(__name__)
 
-app.layout = html.Div([
+"""app.layout = html.Div([
     dcc.Graph(figure=map_fig),
     dcc.Graph(figure=ticket_sale_fig),
     dcc.Graph(figure=surprs_fig)
-])
+])"""
 
-"""
 app.layout = html.Div([
     html.H1(children="Oh hi! Welcome to the Eras Tour (Data Visualition's Version)!"),
     dcc.Graph(id="world-map", figure=map_fig),
-    html.Div(id="info-box", style={"marginTop": "20px", "fontSize": "18px"})
-])"""
+    html.Div(
+        dcc.Graph(id="city_chart"),
+        id="bar-container",
+        style={"display": "none", "marginTop": "20px"})
+])
 
 @app.callback(
-    Output("info-box", "children"),
-    Input("world-map", "clickData")
-)
-
+        [Output("bar-container", "style"),
+        Output("city_chart", "figure")],
+        Input("world-map", "clickData")) 
 
 def display_city_info(clickData):
     if clickData is None:
-        return "Click a city to see more details."
+        return {"display": "none"}, {}
     city = clickData["points"][0]["text"]
 
-    return city
+    data = pd.read_csv("dataset_ts.csv", sep=";")
+    city_stats = data.loc[data["city"]==city]
+
+    city_chart = create_bar_chart(city_stats, 'date', 'tick_sales', f'Ticket sale in {city}', 'Sales ($)', 'Category')
+
+    return {"display": "block"}, city_chart
 
 
 # Run the server
