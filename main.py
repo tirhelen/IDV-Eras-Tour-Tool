@@ -119,7 +119,6 @@ app.layout = html.Div([
     html.Div(
     children=[
         html.Div(dcc.Graph(id="general_ticket_sale",figure=ticket_sale_fig), className="graphs")],
-        #html.Div(dcc.Graph(id="general_surpr_songs", figure=surprs_fig), className="graphs")],
     id="general_charts",
     style={"marginTop":"20px"})], style={"display":"block"}),
     html.Div(id="city_page", style={"display": "none", "marginTop": "20px"})])
@@ -153,16 +152,23 @@ def city_page(city):
     
     songs_1 = city_stats['surp_1']
     songs_2 = city_stats['surp_2']
-    #songs_1 = list(city_stats['surp_1'].str.split(' / '))
-    #songs_2 = list(city_stats['surp_2'].str.split(' / '))
     song_list = [html.Li(x) for x in songs_1]
     song_list += [html.Li(x) for x in songs_2]
 
     return [html.H1(f"{city} - Eras Tour Data"),
-            dcc.Graph(figure=city_chart),
-            html.H2("Surprise Songs"),
-            html.Ul(song_list),
-            html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block"})]
+            html.Div([
+                html.Div(dcc.Graph(figure=city_chart), style={"flex":"1"}),
+                html.Div([
+                    html.H2("Surprise Songs", style={"fontSize":"50px"}),
+                    html.Ul(song_list, style={"fontSize":"40px", "paddingLeft":"20px"})],
+                    style={
+                        "flex":"1",
+                        "border":"1px solid #ccc",
+                        "padding":"10px",
+                        "borderRadius":"8px",
+                        "backgroundColor":"#ffffff"})],
+                    style={"display":"flex", "flexDirection":"row", "gap":"20px"}),
+                html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block", "fontSize":"50px"})]
 
 # Run the server
 if __name__ == '__main__':
