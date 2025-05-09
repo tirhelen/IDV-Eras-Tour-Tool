@@ -1,0 +1,16 @@
+/* Main page */
+body {
+    background-color: #ffb6c1;
+}
+
+h1 {
+    color: #ffffff;
+    text-align: center;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 80px;
+}
+
+.graphs {
+    background-color: #ffb6c1;
+    margin:auto;
+}

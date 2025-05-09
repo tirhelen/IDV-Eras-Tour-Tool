@@ -45,11 +45,19 @@ def tour_map(locations):
     ))
 
     map_fig.update_layout(
-        title = 'Eras Tour Map',
+        title={"text":"Eras Tour Map",
+               "font": {"family": "Times New Roman, Times, serif",
+                "size": 28,"color": "black"}},
+        paper_bgcolor="#ffb6c1",
+        width=2000,
+        height=900,
         geo = dict(
             showland = True,
             landcolor = "rgb(217, 217, 217)",
-            projection_type = "natural earth"
+            projection_type = "natural earth",
+            bgcolor="#ffb6c1",
+            oceancolor="#ffffff",
+            showocean=True
         )
     )
     return map_fig
@@ -60,13 +68,28 @@ def create_bar_chart(df, x, y, title, val, var):
     fig = px.bar(df, x=x, y=y,
                 barmode='group', title=title,
                  labels={'value': val, 'variable': var})
+    fig.update_layout(
+        paper_bgcolor="#ffffff",
+        width=2000,
+        height=900,
+        font_size=25,
+        title={
+            "font": {"family": "Times New Roman, Times, serif",
+                     "size": 28,
+                     "color": "black"}
+        }
+    )
+    fig.update_traces(
+        marker_color="#ff6279"
+    )
+
     return fig
 
 # 1. Bar Chart of City Sales
 ticket_sale_fig = create_bar_chart(city_sales, 'city', 'tick_sales', 'Ticket sale in each concerts', 'Sales ($)', 'Category')
 
 # 2. Bar Chart of Surprise Songs
-surprs_fig = create_bar_chart(song_counts_df, 'Song', 'Count', 'How many times each Surprise song was played?', 'Song', 'Category')
+#surprs_fig = create_bar_chart(song_counts_df, 'Song', 'Count', 'How many times each Surprise song was played?', 'Song', 'Category')
 
 app = dash.Dash(__name__)
 
@@ -74,11 +97,11 @@ app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     html.Div(id="main_page", children=[
     html.H1("Oh hi! Welcome to the Eras Tour (Data Visualition's Version)!"),
-    dcc.Graph(id="world-map", figure=map_fig),
+    html.Div(dcc.Graph(id="world-map", figure=map_fig)),
     html.Div(
         children=[
-            dcc.Graph(id="general_ticket_sale",figure=ticket_sale_fig),
-            dcc.Graph(id="general_surpr_songs", figure=surprs_fig)],
+            html.Div(dcc.Graph(id="general_ticket_sale",figure=ticket_sale_fig), className="graphs")],
+            #html.Div(dcc.Graph(id="general_surpr_songs", figure=surprs_fig), className="graphs")],
         id="general_charts",
         style={"marginTop":"20px"})], style={"display":"block"}),
     
