@@ -78,16 +78,25 @@ app.layout = html.Div([
     html.H1(children="Oh hi! Welcome to the Eras Tour (Data Visualition's Version)!"),
     dcc.Graph(id="world-map", figure=map_fig),
     html.Div(
-        children=[dcc.Graph(id="city_chart"),
-        html.Ul(id="song_list")],
+        children=[
+            dcc.Graph(id="general_ticket_sale",figure=ticket_sale_fig),
+            dcc.Graph(id="general_surpr_songs", figure=surprs_fig)],
+        id="general_charts",
+        style={"marginTop":"20px"}),
+    
+    html.Div(
+        children=[
+            dcc.Graph(id="city_chart"),
+            html.H2(children="Surprise songs"),
+            html.Ul(id="song_list")],
         id="bar-container",
-        style={"display": "none", "marginTop": "20px"}),
-])
+        style={"display": "none", "marginTop": "20px"})])
 
 @app.callback(
         [Output("bar-container", "style"),
         Output("city_chart", "figure"),
-        Output("song_list", "children")],
+        Output("song_list", "children"),
+        Output("general_charts", "style")],
         Input("world-map", "clickData")) 
 
 def display_city_info(clickData):
@@ -98,18 +107,18 @@ def display_city_info(clickData):
     data = pd.read_csv("dataset_ts.csv", sep=";")
     city_stats = data.loc[data["city"]==city]
 
-    city_chart = create_bar_chart(city_stats, 'date', 'tick_sales', f'Ticket sale in {city}', 'Sales ($)', 'Category')
+    city_chart = create_bar_chart(city_stats, 'date', 'tick_sales', f'Ticket sales in {city}', 'Sales ($)', 'Category')
     songs_1 = city_stats['surp_1']
  
     songs_2 = city_stats['surp_2']
 
-    songs_1 = list(city_stats['surp_1'].str.split(' / '))
+    #songs_1 = list(city_stats['surp_1'].str.split(' / '))
 
-    songs_2 = list(city_stats['surp_2'].str.split(' / '))
+    #songs_2 = list(city_stats['surp_2'].str.split(' / '))
     song_list = [html.Li(x) for x in songs_1]
     song_list += [html.Li(x) for x in songs_2]
 
-    return {"display": "block"}, city_chart, song_list
+    return {"display": "block"}, city_chart, song_list, {"display": "none"}
 
 
 # Run the server
