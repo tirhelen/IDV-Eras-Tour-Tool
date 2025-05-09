@@ -4,6 +4,8 @@ import pandas as pd
 import dash
 from dash import html, dcc, Output, Input
 
+data = pd.read_csv("dataset_ts.csv", sep=";")
+
 # Read the data and create a DataFrame
 def preprocess_data():
     data = pd.read_csv("dataset_ts.csv", sep=";")
@@ -68,58 +70,58 @@ surprs_fig = create_bar_chart(song_counts_df, 'Song', 'Count', 'How many times e
 
 app = dash.Dash(__name__)
 
-"""app.layout = html.Div([
-    dcc.Graph(figure=map_fig),
-    dcc.Graph(figure=ticket_sale_fig),
-    dcc.Graph(figure=surprs_fig)
-])"""
-
 app.layout = html.Div([
-    html.H1(children="Oh hi! Welcome to the Eras Tour (Data Visualition's Version)!"),
+    dcc.Location(id="url", refresh=False),
+    html.Div(id="main_page", children=[
+    html.H1("Oh hi! Welcome to the Eras Tour (Data Visualition's Version)!"),
     dcc.Graph(id="world-map", figure=map_fig),
     html.Div(
         children=[
             dcc.Graph(id="general_ticket_sale",figure=ticket_sale_fig),
             dcc.Graph(id="general_surpr_songs", figure=surprs_fig)],
         id="general_charts",
-        style={"marginTop":"20px"}),
+        style={"marginTop":"20px"})], style={"display":"block"}),
     
-    html.Div(
-        children=[
-            dcc.Graph(id="city_chart"),
-            html.H2(children="Surprise songs"),
-            html.Ul(id="song_list")],
-        id="bar-container",
-        style={"display": "none", "marginTop": "20px"})])
+    html.Div(id="city_page", style={"display": "none", "marginTop": "20px"})])
 
 @app.callback(
-        [Output("bar-container", "style"),
-        Output("city_chart", "figure"),
-        Output("song_list", "children"),
-        Output("general_charts", "style")],
-        Input("world-map", "clickData")) 
+        [Output("main_page", "style"),
+        Output("city_page", "style"),
+        Output("city_page", "children")],
+        [Input("world-map", "clickData"),
+        Input("url", "pathname")]) 
 
-def display_city_info(clickData):
-    if clickData is None:
-        return {"display": "none"}, {}
-    city = clickData["points"][0]["text"]
+def display_city_info(clickData, pathname):
 
+    if (clickData is None) and (pathname=="/"):
+        return {"display": "block"}, {"display": "none"}, []
+    if clickData:
+        city = clickData["points"][0]["text"]
+        return {"display": "none"}, {"display": "block"}, city_page(city)
+    if pathname and pathname != "/":
+        city=pathname.strip("/")
+        return {"display": "none"}, {"display": "block"}, city_page(city)
+
+    return {"display": "block"}, {"display": "none"}, []
+
+
+def city_page(city):
     data = pd.read_csv("dataset_ts.csv", sep=";")
     city_stats = data.loc[data["city"]==city]
-
     city_chart = create_bar_chart(city_stats, 'date', 'tick_sales', f'Ticket sales in {city}', 'Sales ($)', 'Category')
+    
     songs_1 = city_stats['surp_1']
- 
     songs_2 = city_stats['surp_2']
-
     #songs_1 = list(city_stats['surp_1'].str.split(' / '))
-
     #songs_2 = list(city_stats['surp_2'].str.split(' / '))
     song_list = [html.Li(x) for x in songs_1]
     song_list += [html.Li(x) for x in songs_2]
 
-    return {"display": "block"}, city_chart, song_list, {"display": "none"}
-
+    return [html.H1(f"{city} - Eras Tour Data"),
+            dcc.Graph(figure=city_chart),
+            html.H2("Surprise Songs"),
+            html.Ul(song_list),
+            html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block"})]
 
 # Run the server
 if __name__ == '__main__':
