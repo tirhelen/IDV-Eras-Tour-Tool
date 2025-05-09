@@ -48,14 +48,14 @@ def tour_map(locations):
         title={"text":"Eras Tour Map",
                "font": {"family": "Times New Roman, Times, serif",
                 "size": 28,"color": "black"}},
-        paper_bgcolor="#ffb6c1",
+        paper_bgcolor="rgba(0,0,0,0)",
         width=2000,
         height=900,
         geo = dict(
             showland = True,
             landcolor = "rgb(217, 217, 217)",
             projection_type = "natural earth",
-            bgcolor="#ffb6c1",
+            bgcolor="rgba(0,0,0,0)",
             oceancolor="#ffffff",
             showocean=True
         )
@@ -85,6 +85,13 @@ def create_bar_chart(df, x, y, title, val, var):
 
     return fig
 
+def surprise_song_list(city):
+    if city == "general":
+        song_list = [html.Li(f"{row['Song']}: {row['Count']}") for _, row in song_counts_df.iterrows()]
+    return [html.H2(f"Surprise Songs",style={"fontSize":"60px"}),
+            html.Ul(song_list)]
+
+
 # 1. Bar Chart of City Sales
 ticket_sale_fig = create_bar_chart(city_sales, 'city', 'tick_sales', 'Ticket sale in each concerts', 'Sales ($)', 'Category')
 
@@ -97,35 +104,46 @@ app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
     html.Div(id="main_page", children=[
     html.H1("Oh hi! Welcome to the Eras Tour (Data Visualition's Version)!"),
-    html.Div(dcc.Graph(id="world-map", figure=map_fig)),
+    html.Div([
+        html.Div(dcc.Graph(id="world-map", figure=map_fig), style={"flex":"1"}),
+        html.Div(id="general_song_list", 
+                style={"flex":"1","paddingLeft":"50px",
+                       "maxHeight":"800px",
+                       "overflowY":"auto",
+                       "border":"1px solid #ccc",
+                       "padding":"10px",
+                       "borderRadius":"8px",
+                       "backgroundColor":"#ffffff",
+                       "fontSize":"50px"})],
+    style={"display":"flex", "flexDirection":"row", "gap":"20px"}),
     html.Div(
-        children=[
-            html.Div(dcc.Graph(id="general_ticket_sale",figure=ticket_sale_fig), className="graphs")],
-            #html.Div(dcc.Graph(id="general_surpr_songs", figure=surprs_fig), className="graphs")],
-        id="general_charts",
-        style={"marginTop":"20px"})], style={"display":"block"}),
-    
+    children=[
+        html.Div(dcc.Graph(id="general_ticket_sale",figure=ticket_sale_fig), className="graphs")],
+        #html.Div(dcc.Graph(id="general_surpr_songs", figure=surprs_fig), className="graphs")],
+    id="general_charts",
+    style={"marginTop":"20px"})], style={"display":"block"}),
     html.Div(id="city_page", style={"display": "none", "marginTop": "20px"})])
 
 @app.callback(
         [Output("main_page", "style"),
         Output("city_page", "style"),
-        Output("city_page", "children")],
+        Output("city_page", "children"),
+        Output("general_song_list","children")],
         [Input("world-map", "clickData"),
         Input("url", "pathname")]) 
 
 def display_city_info(clickData, pathname):
 
     if (clickData is None) and (pathname=="/"):
-        return {"display": "block"}, {"display": "none"}, []
+        return {"display": "block"}, {"display": "none"}, [], surprise_song_list("general")
     if clickData:
         city = clickData["points"][0]["text"]
-        return {"display": "none"}, {"display": "block"}, city_page(city)
+        return {"display": "none"}, {"display": "block"}, city_page(city), []
     if pathname and pathname != "/":
         city=pathname.strip("/")
-        return {"display": "none"}, {"display": "block"}, city_page(city)
+        return {"display": "none"}, {"display": "block"}, city_page(city), []
 
-    return {"display": "block"}, {"display": "none"}, []
+    return {"display": "block"}, {"display": "none"}, [], surprise_song_list("general")
 
 
 def city_page(city):
