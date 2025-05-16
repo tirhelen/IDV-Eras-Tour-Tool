@@ -26,3 +26,7 @@ Activate the environment:
 4. Run the code
 
 > python main.py
+
+5. Open the app
+
+Open the app in your browser http://127.0.0.1:8050/ (or click the link in your console)
