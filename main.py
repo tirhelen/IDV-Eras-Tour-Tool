@@ -50,28 +50,31 @@ def tour_map(locations):
         lat = locations["y"],
         text = locations["city"],  # Appears on hover
         mode = 'markers',
-        marker = dict(size=8, color='red'),
+        marker = dict(size=15, color='red'),
         hoverinfo = 'text',
     ))
 
     map_fig.update_layout(
-        title={"text":"Eras Tour Map",
-               "font": {"family": "Times New Roman, Times, serif",
-                "size": 28,"color": "black"}},
+        title={
+            "text": "Eras Tour Map",
+            "font": {"family": "Times New Roman, Times, serif", "size": 80, "color": "black"}
+        },
         paper_bgcolor="rgba(0,0,0,0)",
-        width=2000,
-        height=900,
-        geo = dict(
-            showland = True,
-            landcolor = "rgb(217, 217, 217)",
-            projection_type = "natural earth",
+        geo=dict(
+            showland=True,
+            landcolor="rgb(217, 217, 217)",
+            projection_type="natural earth",
             bgcolor="rgba(0,0,0,0)",
             oceancolor="#ffffff",
             showocean=True,
-            projection=dict(scale=2),
+            projection=dict(scale=1.8),  # Adjust to fit your points better
             center=dict(lat=30, lon=-15),
+            resolution=50,  # Higher resolution for a cleaner map
+        ),
+        hoverlabel=dict(
+        font_size=60),
+        margin={"l": 0, "r": 0, "t": 120, "b": 0},  # Remove excess margins
         )
-    )
     return map_fig
 
 map_fig = tour_map(coordinates)
@@ -80,17 +83,43 @@ def create_bar_chart(df, x, y, title, val, var):
     fig = px.bar(df, x=x, y=y,
                 barmode='group', title=title,
                  labels={'value': val, 'variable': var})
+    
+    fig.update_layout(
+        paper_bgcolor="#ffffff",
+        width=5500,
+        height=1600,
+        font_size=45,
+        title={
+            "font": {"family": "Times New Roman, Times, serif",
+                     "size": 80,
+                     "color": "black"}
+        },
+        hoverlabel=dict(
+        font_size=60))
+    fig.update_traces(
+        marker_color="#ff6279"
+    )
+
+    return fig
+
+def create_city_chart(df, x, y, title, val, var):
+    fig = px.bar(df, x=x, y=y,
+                barmode='group', title=title,
+                 labels={'value': val, 'variable': var})
+    
     fig.update_layout(
         paper_bgcolor="#ffffff",
         width=2000,
-        height=900,
-        font_size=25,
+        height=1000,
+        font_size=45,
         title={
             "font": {"family": "Times New Roman, Times, serif",
-                     "size": 28,
+                     "size": 80,
                      "color": "black"}
-        }
-    )
+        },
+        hoverlabel=dict(
+        font_size=60))
+    
     fig.update_traces(
         marker_color="#ff6279"
     )
@@ -115,47 +144,71 @@ def surprise_song_list(city):
             for _, row in song_counts_df.iterrows()
         ]
 
-    return [html.H2(f"Surprise Songs",style={"fontSize":"60px"}),
+    return [html.H2(f"How many times each surprise song was played:",style={"fontSize":"60px"}),
+            html.H3(f"Click to see in which cities.",style={"fontSize":"50px"}),
             html.Ul(song_list)]
 
 
 # 1. Bar Chart of City Sales
-ticket_sale_fig = create_bar_chart(city_sales, 'city', 'tick_sales', 'Ticket sale in each concerts', 'Sales ($)', 'Category')
+ticket_sale_fig = create_bar_chart(city_sales, 'city', 'tick_sales', 'Ticket sale in each concert', 'Sales ($)', 'Category')
 
 app = dash.Dash(__name__)
 
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
+    
+    # Main Page Content
     html.Div(id="main_page", children=[
-    html.H1("Oh hi! Welcome to the Eras Tour (Data Visualition's Version)!"),
-    html.Div([
-        html.Div(dcc.Graph(id="world-map", figure=map_fig), style={"flex":"1"}),
-        html.Div(id="general_song_list", 
-                style={"flex":"1","paddingLeft":"50px",
-                       "maxHeight":"800px",
-                       "overflowY":"auto",
-                       "border":"1px solid #ccc",
-                       "padding":"10px",
-                       "borderRadius":"8px",
-                       "backgroundColor":"#ffffff",
-                       "fontSize":"50px"})],
-    style={"display":"flex", "flexDirection":"row", "gap":"20px"}),
-    html.Div(
-    children=[
-        html.Div(dcc.Graph(id="general_ticket_sale",figure=ticket_sale_fig), className="graphs")],
-    id="general_charts",
-    style={"marginTop":"20px"})], style={"display":"block"}),
-    html.Div(id="city_page", style={"display": "none", "marginTop": "20px"})])
+        html.H1("Oh hi! Welcome to the Eras Tour (Data Visualization's Version)!"),
+        
+        # Map and Song List Side by Side
+        html.Div([
+            dcc.Graph(id="world-map", figure=map_fig, 
+                      style={"flex": "1", "height": "80vh", "minWidth": "60%"}), 
+            html.Div(id="general_song_list", 
+                style={
+                    "flex": "1",
+                    "paddingLeft": "50px",
+                    "maxHeight": "30vh",
+                    "overflowY": "auto",
+                    "border": "1px solid #ccc",
+                    "padding": "10px",
+                    "borderRadius": "8px",
+                    "backgroundColor": "#ffffff",
+                    "fontSize": "70px",
+                    "minWidth": "30%"
+                })
+        ], style={"display":"flex", "flexDirection":"row", "gap":"20px"}),
+    ], style={"marginBottom": "20px"}),
 
+    # Ticket Sales Chart
+    html.Div(id="general_charts", children=[
+        dcc.Graph(id="general_ticket_sale", figure=ticket_sale_fig)
+    ], style={
+        "marginTop": "20px",
+        "width": "100%",
+        "padding": "20px",
+        "backgroundColor": "#ffffff",
+        "borderRadius": "8px",
+        "boxShadow": "0 2px 15px rgba(0,0,0,0.15)"
+    }),
+    # City Page (Hidden by Default)
+    html.Div(id="city_page", style={"display": "none", "marginTop": "20px"})
+])
 
 @app.callback(
-        [Output("main_page", "style"),
+    [
+        Output("main_page", "style"),
         Output("city_page", "style"),
         Output("city_page", "children"),
-        Output("general_song_list","children")],
-        [Input("world-map", "clickData"),
-        Input("url", "pathname")]) 
-
+        Output("general_song_list", "children"),
+        Output("general_charts", "style")
+    ],
+    [
+        Input("world-map", "clickData"),
+        Input("url", "pathname")
+    ]
+)
 
 def display_city_info(clickData, pathname):
     if pathname and pathname.startswith("/song/"):
@@ -163,18 +216,21 @@ def display_city_info(clickData, pathname):
         song_name = urllib.parse.unquote_plus(pathname.split("/song/")[1])
         if song_name in song_to_cities:
             cities = song_to_cities[song_name]
-            return {"display": "none"}, {"display": "block"}, song_page(song_name, cities), []
+            return {"display": "none"}, {"display": "block"}, song_page(song_name, cities), [], {"display": "none"}
 
-    if (clickData is None) and (pathname=="/"):
-        return {"display": "block"}, {"display": "none"}, [], surprise_song_list("general")
+    if (clickData is None) and (pathname == "/"):
+        return {"display": "block"}, {"display": "none"}, [], surprise_song_list("general"), {"display": "block"}
+
     if clickData:
         city = clickData["points"][0]["text"]
-        return {"display": "none"}, {"display": "block"}, city_page(city), []
-    if pathname and pathname != "/":
-        city=pathname.strip("/")
-        return {"display": "none"}, {"display": "block"}, city_page(city), []
+        return {"display": "none"}, {"display": "block"}, city_page(city), [], {"display": "none"}
 
-    return {"display": "block"}, {"display": "none"}, [], surprise_song_list("general")
+    if pathname and pathname != "/":
+        city = pathname.strip("/")
+        return {"display": "none"}, {"display": "block"}, city_page(city), [], {"display": "none"}
+
+    return {"display": "block"}, {"display": "none"}, [], surprise_song_list("general"), {"display": "block"}
+
 
 def song_page(song_name, cities):
     return [
@@ -187,7 +243,7 @@ def song_page(song_name, cities):
 def city_page(city):
     data = pd.read_csv("dataset_ts.csv", sep=";")
     city_stats = data.loc[data["city"]==city]
-    city_chart = create_bar_chart(city_stats, 'date', 'tick_sales', f'Ticket sales in {city}', 'Sales ($)', 'Category')
+    city_chart = create_city_chart(city_stats, 'date', 'tick_sales', f'Ticket sales in {city}', 'Sales ($)', 'Category')
     
     songs = city_stats[['surp_1','surp_2','date']]
     songs  = songs.sort_values(by="date")
