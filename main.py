@@ -159,10 +159,7 @@ def surprise_song_list(city):
 # 1. Bar Chart of City Sales
 ticket_sale_fig = create_bar_chart(city_sales, 'city', 'tick_sales', 'Ticket sale in each concert', 'Sales ($)', 'Category')
 
-app = dash.Dash(
-    __name__,
-    requests_pathname_prefix="/IDV_Eras_Tour_Tool/"
-)
+app = dash.Dash(__name__)
 
 app.layout = html.Div([
     dcc.Location(id="url", refresh=False),
@@ -282,8 +279,5 @@ def city_page(city):
                 html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block", "fontSize":"50px"})]
 
 # Run the server
-if __name__ == "__main__":
-    # Correct way to export
-    with open("index.html", "w") as f:
-        f.write(app.index())
-    print("Exported to index.html")
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=8080)
