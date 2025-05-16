@@ -1,9 +1,11 @@
-This is a tool for Swifties.
+In this app you can explore the Eras Tour once again! You'll see in which cities Taylor Swift toured, how many tickets they sold and which surprise songs she performed!
 
-How to use:
+You can use the app directly in this address: [https://idv-eras-tour-tool.onrender.com/]
 
 
-1. Clone the reporisitory
+Other option is to clone this repository and to follow these steps:
+
+1. Clone the repository
 > git clone git@github.com:tirhelen/IDV-Eras-Tour-Tool.git
 
 or
