@@ -75,7 +75,7 @@ def tour_map(locations):
             resolution=50,  # Higher resolution for a cleaner map
         ),
         hoverlabel=dict(
-        font_size=10),
+        font_size=20),
         margin={"l": 0, "r": 0, "t": 120, "b": 0},  # Remove excess margins
         )
     return map_fig
@@ -91,7 +91,7 @@ def create_bar_chart(df, x, y, title, val, var):
         xaxis_title="City",
         yaxis_title="Tickets sold",
         paper_bgcolor="#ffffff",
-        width=2000,
+        width=1850,
         height=900,
         font_size=25,
         title={
@@ -99,8 +99,9 @@ def create_bar_chart(df, x, y, title, val, var):
                      "size": 28,
                      "color": "black"}
         },
+        xaxis=dict(tickangle=-45),
         hoverlabel=dict(
-        font_size=10))
+        font_size=20))
     fig.update_traces(
         marker_color="#ff6279"
     )
@@ -116,8 +117,8 @@ def create_city_chart(df, x, y, title, val, var):
         xaxis_title="Date",
         yaxis_title="Tickets sold",
         paper_bgcolor="#ffffff",
-        width=1500,
-        height=900,
+        width=900,
+        height=600,
         font_size=25,
         title={
             "font": {"family": "Times New Roman, Times, serif",
@@ -125,7 +126,7 @@ def create_city_chart(df, x, y, title, val, var):
                      "color": "black"}
         },
         hoverlabel=dict(
-        font_size=10))
+        font_size=20))
     
     fig.update_traces(
         marker_color="#ff6279"
@@ -151,8 +152,8 @@ def surprise_song_list(city):
             for _, row in song_counts_df.iterrows()
         ]
 
-    return [html.H2(f"How many times each surprise song was played:",style={"fontSize":"10px"}),
-            html.H3(f"Click to see in which cities.",style={"fontSize":"8px"}),
+    return [html.H2(f"How many times each surprise song was played:",style={"fontSize":"30px"}),
+            html.H3(f"Click to see in which cities.",style={"fontSize":"20px"}),
             html.Ul(song_list)]
 
 
@@ -174,18 +175,17 @@ app.layout = html.Div([
             html.Div(id="general_song_list", 
                 style={
                     "flex": "1",
-                    "paddingLeft": "50px",
-                    "maxHeight": "30vh",
+                    "marginTop": "150px", 
+                    "maxHeight": "48vh",
                     "overflowY": "auto",
-                    "border": "1px solid #ccc",
+                    "border": "3px solid #ccc",
                     "padding": "10px",
                     "borderRadius": "8px",
                     "backgroundColor": "#ffffff",
-                    "fontSize": "25px",
-                    "minWidth": "30%"
+                    "fontSize": "25px"
                 })
-        ], style={"display":"flex", "flexDirection":"row", "gap":"20px"}),
-    ], style={"marginBottom": "20px"}),
+        ], style={"display":"flex", "flexDirection":"row", "gap":"30px"}),
+    ], style={"marginBottom": "10px"}),
 
     # Ticket Sales Chart
     html.Div(id="general_charts", children=[
@@ -240,9 +240,10 @@ def display_city_info(clickData, pathname):
 
 def song_page(song_name, cities):
     return [
-        html.H1(f"{song_name} - Eras Tour Data", style={"fontSize":"60px"}),
-        html.Ul([html.Li(city) for city in cities], style={"fontSize":"100px", "paddingLeft":"20px"}),
-        html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block", "fontSize":"50px"})
+        html.H2(f"{song_name}", style={"fontSize":"40px"}),
+        html.H2("was played in following cities:",style={"fontSize":"35px"}),
+        html.Ul([html.Li(city) for city in cities], style={"fontSize":"30px", "paddingLeft":"40px"}),
+        html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block", "fontSize":"30px"})
     ]
 
 
@@ -267,8 +268,8 @@ def city_page(city):
             html.Div([
                 html.Div(dcc.Graph(figure=city_chart), style={"flex":"1"}),
                 html.Div([
-                    html.H2("Surprise Songs", style={"fontSize":"70px"}),
-                    html.Ul(songs_list, style={"fontSize":"60px", "paddingLeft":"80px"})],
+                    html.H2("Surprise Songs", style={"fontSize":"30px"}),
+                    html.Ul(songs_list, style={"fontSize":"30px", "paddingLeft":"80px"})],
                     style={
                         "flex":"1",
                         "border":"1px solid #ccc",
@@ -276,8 +277,10 @@ def city_page(city):
                         "borderRadius":"8px",
                         "backgroundColor":"#ffffff"})],
                     style={"display":"flex", "flexDirection":"row", "gap":"20px"}),
-                html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block", "fontSize":"50px"})]
+                html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block", "fontSize":"20px"})]
 
 # Run the server
 if __name__ == '__main__':
+
+    #app.run(debug=True) #(run locally)
     app.run(host="0.0.0.0", port=8080)
