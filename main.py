@@ -3,33 +3,43 @@ import plotly.graph_objects as go
 import pandas as pd
 import dash
 from dash import html, dcc, Output, Input
+import urllib
+import re
 
 data = pd.read_csv("dataset_ts.csv", sep=";")
 
-# Read the data and create a DataFrame
+# Read the data and preprocess
 def preprocess_data():
+    # Read the data into a DataFrame and grop the cities
     data = pd.read_csv("dataset_ts.csv", sep=";")
-
     city_sales = data.groupby('city')['tick_sales'].sum().reset_index()
 
     # Preprocessing songs
-    songs_1 = data['surp_1'].dropna().str.split(' / ')
-    songs_2 = data['surp_2'].dropna().str.split(' / ')
+    songs_1 = data[['city', 'surp_1']].dropna()
+    songs_2 = data[['city', 'surp_2']].dropna()
 
-    # Flatten both lists
-    all_songs = songs_1.explode().tolist() + songs_2.explode().tolist()
+    songs_1['surp_1'] = data['surp_1'].str.split(' / ')
+    songs_2['surp_2'] = data['surp_2'].str.split(' / ')
 
-    song_counts = pd.Series(all_songs).value_counts()
+    songs_1 = songs_1.explode('surp_1').rename(columns={'surp_1': 'Song'})
+    songs_2 = songs_2.explode('surp_2').rename(columns={'surp_2': 'Song'})
 
-    song_counts_df = song_counts.reset_index()
+    # Combine the two song lists into a single DataFrame
+    song_plays = pd.concat([songs_1, songs_2])
+
+    # Count song occurrences
+    song_counts_df = song_plays['Song'].value_counts().reset_index()
     song_counts_df.columns = ['Song', 'Count']
 
-    # Map data
+    # Map song to cities
+    song_to_cities = song_plays.groupby('Song')['city'].apply(list).to_dict()
+
+    # Map data for coordinates
     coordinates = data[["city", "x", "y"]]
 
-    return city_sales, song_counts_df, coordinates
+    return city_sales, song_counts_df, coordinates, song_to_cities
 
-city_sales, song_counts_df, coordinates = preprocess_data()
+city_sales, song_counts_df, coordinates, song_to_cities = preprocess_data()
 
 def tour_map(locations):
 
@@ -88,17 +98,29 @@ def create_bar_chart(df, x, y, title, val, var):
     return fig
 
 def surprise_song_list(city):
+    def encode_song_name(song):
+        # Replace problematic characters with URL-safe versions
+        # Remove special characters that can break the URL
+        safe_song = re.sub(r"[?!&%#/@:;]", "", song)
+        return urllib.parse.quote_plus(safe_song.strip())
+    
     if city == "general":
-        song_list = [html.Li(f"{row['Song']}: {row['Count']}") for _, row in song_counts_df.iterrows()]
+        song_list = [
+            html.Li(
+                dcc.Link(
+                    f"{row['Song']} ({row['Count']})", 
+                    href=f"/song/{encode_song_name(row['Song'])}"
+                )
+            )
+            for _, row in song_counts_df.iterrows()
+        ]
+
     return [html.H2(f"Surprise Songs",style={"fontSize":"60px"}),
             html.Ul(song_list)]
 
 
 # 1. Bar Chart of City Sales
 ticket_sale_fig = create_bar_chart(city_sales, 'city', 'tick_sales', 'Ticket sale in each concerts', 'Sales ($)', 'Category')
-
-# 2. Bar Chart of Surprise Songs
-#surprs_fig = create_bar_chart(song_counts_df, 'Song', 'Count', 'How many times each Surprise song was played?', 'Song', 'Category')
 
 app = dash.Dash(__name__)
 
@@ -125,6 +147,7 @@ app.layout = html.Div([
     style={"marginTop":"20px"})], style={"display":"block"}),
     html.Div(id="city_page", style={"display": "none", "marginTop": "20px"})])
 
+
 @app.callback(
         [Output("main_page", "style"),
         Output("city_page", "style"),
@@ -133,7 +156,14 @@ app.layout = html.Div([
         [Input("world-map", "clickData"),
         Input("url", "pathname")]) 
 
+
 def display_city_info(clickData, pathname):
+    if pathname and pathname.startswith("/song/"):
+        # Decode the song name and remove the special character filter
+        song_name = urllib.parse.unquote_plus(pathname.split("/song/")[1])
+        if song_name in song_to_cities:
+            cities = song_to_cities[song_name]
+            return {"display": "none"}, {"display": "block"}, song_page(song_name, cities), []
 
     if (clickData is None) and (pathname=="/"):
         return {"display": "block"}, {"display": "none"}, [], surprise_song_list("general")
@@ -145,6 +175,13 @@ def display_city_info(clickData, pathname):
         return {"display": "none"}, {"display": "block"}, city_page(city), []
 
     return {"display": "block"}, {"display": "none"}, [], surprise_song_list("general")
+
+def song_page(song_name, cities):
+    return [
+        html.H1(f"{song_name} - Eras Tour Data", style={"fontSize":"60px"}),
+        html.Ul([html.Li(city) for city in cities], style={"fontSize":"40px", "paddingLeft":"20px"}),
+        html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block", "fontSize":"50px"})
+    ]
 
 
 def city_page(city):
