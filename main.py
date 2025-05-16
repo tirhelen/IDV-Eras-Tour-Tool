@@ -152,17 +152,24 @@ def city_page(city):
     city_stats = data.loc[data["city"]==city]
     city_chart = create_bar_chart(city_stats, 'date', 'tick_sales', f'Ticket sales in {city}', 'Sales ($)', 'Category')
     
-    songs_1 = city_stats['surp_1']
-    songs_2 = city_stats['surp_2']
-    song_list = [html.Li(x) for x in songs_1]
-    song_list += [html.Li(x) for x in songs_2]
+    songs = city_stats[['surp_1','surp_2','date']]
+    songs  = songs.sort_values(by="date")
+    songs_list = []
+
+    for index, row in songs.iterrows():
+        date = html.H3(row['date'])
+        surp1= html.Li(row['surp_1'])
+        surp2= html.Li(row['surp_2'])
+        songs_list.append(date)
+        songs_list.append(surp1)
+        songs_list.append(surp2)
 
     return [html.H1(f"{city} - Eras Tour Data"),
             html.Div([
                 html.Div(dcc.Graph(figure=city_chart), style={"flex":"1"}),
                 html.Div([
                     html.H2("Surprise Songs", style={"fontSize":"50px"}),
-                    html.Ul(song_list, style={"fontSize":"40px", "paddingLeft":"20px"})],
+                    html.Ul(songs_list, style={"fontSize":"40px", "paddingLeft":"20px"})],
                     style={
                         "flex":"1",
                         "border":"1px solid #ccc",
