@@ -57,7 +57,9 @@ def tour_map(locations):
             projection_type = "natural earth",
             bgcolor="rgba(0,0,0,0)",
             oceancolor="#ffffff",
-            showocean=True
+            showocean=True,
+            projection=dict(scale=2),
+            center=dict(lat=30, lon=-15),
         )
     )
     return map_fig
