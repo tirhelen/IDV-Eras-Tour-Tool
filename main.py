@@ -283,6 +283,7 @@ def city_page(city):
 
 # Run the server
 if __name__ == "__main__":
+    # Correct way to export
     with open("index.html", "w") as f:
         f.write(app.index())
     print("Exported to index.html")
