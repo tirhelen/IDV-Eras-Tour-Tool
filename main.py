@@ -8,7 +8,7 @@ import re
 
 data = pd.read_csv("dataset_ts.csv", sep=";")
 
-# Read the data and preprocess
+
 def preprocess_data():
     # Read the data into a DataFrame and grop the cities
     data = pd.read_csv("dataset_ts.csv", sep=";")
@@ -53,14 +53,14 @@ def tour_map(locations):
         lat = locations["y"],
         text = locations["city"],  # Appears on hover
         mode = 'markers',
-        marker = dict(size=15, color='red'),
+        marker = dict(size=8, color='red'),
         hoverinfo = 'text',
     ))
 
     map_fig.update_layout(
         title={
             "text": "Eras Tour Map",
-            "font": {"family": "Times New Roman, Times, serif", "size": 80, "color": "black"}
+            "font": {"family": "Times New Roman, Times, serif", "size": 28, "color": "black"}
         },
         paper_bgcolor="rgba(0,0,0,0)",
         geo=dict(
@@ -75,7 +75,7 @@ def tour_map(locations):
             resolution=50,  # Higher resolution for a cleaner map
         ),
         hoverlabel=dict(
-        font_size=60),
+        font_size=10),
         margin={"l": 0, "r": 0, "t": 120, "b": 0},  # Remove excess margins
         )
     return map_fig
@@ -91,16 +91,16 @@ def create_bar_chart(df, x, y, title, val, var):
         xaxis_title="City",
         yaxis_title="Tickets sold",
         paper_bgcolor="#ffffff",
-        width=5500,
-        height=1600,
-        font_size=45,
+        width=2000,
+        height=900,
+        font_size=25,
         title={
             "font": {"family": "Times New Roman, Times, serif",
-                     "size": 80,
+                     "size": 28,
                      "color": "black"}
         },
         hoverlabel=dict(
-        font_size=60))
+        font_size=10))
     fig.update_traces(
         marker_color="#ff6279"
     )
@@ -116,16 +116,16 @@ def create_city_chart(df, x, y, title, val, var):
         xaxis_title="Date",
         yaxis_title="Tickets sold",
         paper_bgcolor="#ffffff",
-        width=2000,
-        height=1000,
-        font_size=45,
+        width=1500,
+        height=900,
+        font_size=25,
         title={
             "font": {"family": "Times New Roman, Times, serif",
-                     "size": 80,
+                     "size": 30,
                      "color": "black"}
         },
         hoverlabel=dict(
-        font_size=60))
+        font_size=10))
     
     fig.update_traces(
         marker_color="#ff6279"
@@ -151,8 +151,8 @@ def surprise_song_list(city):
             for _, row in song_counts_df.iterrows()
         ]
 
-    return [html.H2(f"How many times each surprise song was played:",style={"fontSize":"60px"}),
-            html.H3(f"Click to see in which cities.",style={"fontSize":"50px"}),
+    return [html.H2(f"How many times each surprise song was played:",style={"fontSize":"10px"}),
+            html.H3(f"Click to see in which cities.",style={"fontSize":"8px"}),
             html.Ul(song_list)]
 
 
@@ -170,7 +170,7 @@ app.layout = html.Div([
         
         html.Div([
             dcc.Graph(id="world-map", figure=map_fig, 
-                      style={"flex": "1", "height": "80vh", "minWidth": "60%"}), 
+                      style={"flex": "1", "height": "70vh", "minWidth": "50%"}), 
             html.Div(id="general_song_list", 
                 style={
                     "flex": "1",
@@ -181,7 +181,7 @@ app.layout = html.Div([
                     "padding": "10px",
                     "borderRadius": "8px",
                     "backgroundColor": "#ffffff",
-                    "fontSize": "70px",
+                    "fontSize": "25px",
                     "minWidth": "30%"
                 })
         ], style={"display":"flex", "flexDirection":"row", "gap":"20px"}),
