@@ -18,8 +18,11 @@ def preprocess_data():
     songs_1 = data[['city', 'surp_1']].dropna()
     songs_2 = data[['city', 'surp_2']].dropna()
 
-    songs_1['surp_1'] = data['surp_1'].str.split(' / ')
-    songs_2['surp_2'] = data['surp_2'].str.split(' / ')
+    songs_1['surp_1'] = songs_1['surp_1'].str.replace(r"[!?]", "", regex=True)
+    songs_2['surp_2'] = songs_2['surp_2'].str.replace(r"[!?]", "", regex=True)
+
+    songs_1['surp_1'] = songs_1['surp_1'].str.split(' / ')
+    songs_2['surp_2'] = songs_2['surp_2'].str.split(' / ')
 
     songs_1 = songs_1.explode('surp_1').rename(columns={'surp_1': 'Song'})
     songs_2 = songs_2.explode('surp_2').rename(columns={'surp_2': 'Song'})
@@ -85,6 +88,8 @@ def create_bar_chart(df, x, y, title, val, var):
                  labels={'value': val, 'variable': var})
     
     fig.update_layout(
+        xaxis_title="City",
+        yaxis_title="Tickets sold",
         paper_bgcolor="#ffffff",
         width=5500,
         height=1600,
@@ -108,6 +113,8 @@ def create_city_chart(df, x, y, title, val, var):
                  labels={'value': val, 'variable': var})
     
     fig.update_layout(
+        xaxis_title="Date",
+        yaxis_title="Tickets sold",
         paper_bgcolor="#ffffff",
         width=2000,
         height=1000,
@@ -161,7 +168,6 @@ app.layout = html.Div([
     html.Div(id="main_page", children=[
         html.H1("Oh hi! Welcome to the Eras Tour (Data Visualization's Version)!"),
         
-        # Map and Song List Side by Side
         html.Div([
             dcc.Graph(id="world-map", figure=map_fig, 
                       style={"flex": "1", "height": "80vh", "minWidth": "60%"}), 
@@ -235,7 +241,7 @@ def display_city_info(clickData, pathname):
 def song_page(song_name, cities):
     return [
         html.H1(f"{song_name} - Eras Tour Data", style={"fontSize":"60px"}),
-        html.Ul([html.Li(city) for city in cities], style={"fontSize":"40px", "paddingLeft":"20px"}),
+        html.Ul([html.Li(city) for city in cities], style={"fontSize":"100px", "paddingLeft":"20px"}),
         html.A("Back to main page", href="/", style={"marginTop": "20px", "display": "block", "fontSize":"50px"})
     ]
 
@@ -261,8 +267,8 @@ def city_page(city):
             html.Div([
                 html.Div(dcc.Graph(figure=city_chart), style={"flex":"1"}),
                 html.Div([
-                    html.H2("Surprise Songs", style={"fontSize":"50px"}),
-                    html.Ul(songs_list, style={"fontSize":"40px", "paddingLeft":"20px"})],
+                    html.H2("Surprise Songs", style={"fontSize":"70px"}),
+                    html.Ul(songs_list, style={"fontSize":"60px", "paddingLeft":"80px"})],
                     style={
                         "flex":"1",
                         "border":"1px solid #ccc",
